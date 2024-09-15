@@ -3,75 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webots Joystick Control</title>
-    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.8.0/dist/nipplejs.min.js"></script>
+    <title>Car Control with Joystick</title>
     <style>
-        #joystickContainer {
-            position: relative;
-            width: 400px;
-            height: 400px;
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
         }
-        .joystick {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-        }
-        #joystick1 {
-            left: 0;
-        }
-        #joystick2 {
-            right: 0;
+        #joystick {
+            width: 300px;
+            height: 300px;
         }
         #urlInput {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
     </style>
+    <!-- Include nipplejs library -->
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.8.6/dist/nipplejs.min.js"></script>
 </head>
 <body>
-    <div>
-        <input type="text" id="urlInput" placeholder="Enter ngrok URL">
-    </div>
-    <div id="joystickContainer">
-        <div id="joystick1" class="joystick"></div>
-        <div id="joystick2" class="joystick"></div>
-    </div>
+    <input type="text" id="urlInput" placeholder="Enter ngrok URL" value="https://1234abcd.ngrok.io">
+    <div id="joystick"></div>
+
     <script>
-        const joystick1 = nipplejs.create({
-            zone: document.getElementById('joystick1'),
+        // Get the URL input element
+        const urlInput = document.getElementById('urlInput');
+        
+        // Create the joystick instance
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick'),
             mode: 'static',
-            position: { top: '50%', left: '50%' }
+            position: { left: '50%', top: '50%' },
+            color: 'blue',
+            size: 200
         });
 
-        const joystick2 = nipplejs.create({
-            zone: document.getElementById('joystick2'),
-            mode: 'static',
-            position: { top: '50%', left: '50%' }
-        });
+        function sendControlCommand(direction) {
+            const url = urlInput.value; // Get the ngrok URL from input
 
-        function sendControlData() {
-            const urlInput = document.getElementById('urlInput').value;
-            if (!urlInput) {
-                console.error('ngrok URL is not set');
-                return;
-            }
-
-            const throttle = joystick1.manager.get('data').y || 0;
-            const steering = joystick2.manager.get('data').x || 0;
-
-            fetch(`${urlInput}/control`, {
+            fetch(`${url}/control`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ throttle, steering })
+                body: JSON.stringify({ direction: direction })
             })
             .then(response => response.json())
             .then(data => console.log('Success:', data))
             .catch((error) => console.error('Error:', error));
         }
 
-        joystick1.on('move', sendControlData);
-        joystick2.on('move', sendControlData);
+        joystick.on('move', (evt, data) => {
+            let direction = 'brake';
+            if (data.direction) {
+                if (data.direction.angle === 'up') {
+                    direction = 'up';
+                } else if (data.direction.angle === 'down') {
+                    direction = 'down';
+                } else if (data.direction.angle === 'left') {
+                    direction = 'left';
+                } else if (data.direction.angle === 'right') {
+                    direction = 'right';
+                }
+            }
+
+            sendControlCommand(direction);
+        });
+
+        joystick.on('end', () => {
+            // Send brake command when joystick is released
+            sendControlCommand('brake');
+        });
     </script>
 </body>
 </html>
