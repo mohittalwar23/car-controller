@@ -7,6 +7,7 @@
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -28,7 +29,7 @@
             border: none;
         }
 
-        .up, .down {
+        .up, .down, .brake {
             display: block;
             margin: 0 auto;
         }
@@ -37,11 +38,34 @@
             display: inline-block;
         }
 
+        input[type="text"] {
+            font-size: 16px;
+            padding: 10px;
+            margin: 10px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .submit-button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div>
+        <input id="ngrok-url" type="text" placeholder="Enter ngrok URL" />
+        <button class="submit-button" onclick="setNgrokUrl()">Set URL</button>
+    </div>
     <div>
         <button class="up" onclick="sendCommand('up')">⬆️</button>
     </div>
@@ -51,12 +75,24 @@
     </div>
     <div>
         <button class="down" onclick="sendCommand('down')">⬇️</button>
+        <button class="brake" onclick="sendCommand('brake')">🛑</button>
     </div>
 </div>
-    
+
 <script>
+    let baseUrl = ''; // Variable to store the base URL
+
+    function setNgrokUrl() {
+        baseUrl = document.getElementById('ngrok-url').value;
+    }
+
     function sendCommand(direction) {
-        fetch('https://4081-2401-4900-52b2-b202-c74c-2ccf-b4ba-d764.ngrok-free.app/control', {  // Replace <your-ngrok-url> with ngrok URL
+        if (!baseUrl) {
+            alert('Please set the ngrok URL first.');
+            return;
+        }
+
+        fetch(`${baseUrl}/control`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,8 +109,6 @@
         });
     }
 </script>
-
-
 
 </body>
 </html>
