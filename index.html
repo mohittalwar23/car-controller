@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Control</title>
+    <title>Car Control with Joystick</title>
     <style>
         body {
             display: flex;
@@ -12,103 +12,73 @@
             align-items: center;
             height: 100vh;
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
         }
-
-        .container {
-            text-align: center;
-        }
-
-        button {
-            width: 80px;
-            height: 80px;
-            font-size: 24px;
-            margin: 10px;
-            border-radius: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-        }
-
-        .up, .down, .brake {
-            display: block;
-            margin: 0 auto;
-        }
-
-        .left, .right {
-            display: inline-block;
-        }
-
-        input[type="text"] {
-            font-size: 16px;
-            padding: 10px;
-            margin: 10px;
+        #joystick {
             width: 300px;
-            text-align: center;
+            height: 300px;
         }
-
-        .submit-button {
-            margin: 10px;
-            padding: 10px;
-            font-size: 16px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        #urlInput {
+            margin-bottom: 20px;
         }
-
     </style>
+    <!-- Include nipplejs library -->
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.8.6/dist/nipplejs.min.js"></script>
 </head>
 <body>
+    <input type="text" id="urlInput" placeholder="Enter ngrok URL" value="https://1234abcd.ngrok.io">
+    <div id="joystick"></div>
 
-<div class="container">
-    <div>
-        <input id="ngrok-url" type="text" placeholder="Enter ngrok URL" />
-        <button class="submit-button" onclick="setNgrokUrl()">Set URL</button>
-    </div>
-    <div>
-        <button class="up" onclick="sendCommand('up')">⬆️</button>
-    </div>
-    <div>
-        <button class="left" onclick="sendCommand('left')">⬅️</button>
-        <button class="right" onclick="sendCommand('right')">➡️</button>
-    </div>
-    <div>
-        <button class="down" onclick="sendCommand('down')">⬇️</button>
-        <button class="brake" onclick="sendCommand('brake')">🛑</button>
-    </div>
-</div>
+    <script>
+        // Get the URL input element
+        const urlInput = document.getElementById('urlInput');
+        
+        // Create the joystick instance
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick'),
+            mode: 'static',
+            position: { left: '50%', top: '50%' },
+            color: 'blue',
+            size: 200
+        });
 
-<script>
-    let baseUrl = ''; // Variable to store the base URL
+        function sendControlCommand(direction) {
+            const url = urlInput.value; // Get the ngrok URL from input
 
-    function setNgrokUrl() {
-        baseUrl = document.getElementById('ngrok-url').value;
-    }
-
-    function sendCommand(direction) {
-        if (!baseUrl) {
-            alert('Please set the ngrok URL first.');
-            return;
+            fetch(`${url}/control`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ direction: direction })
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => console.error('Error:', error));
         }
 
-        fetch(`${baseUrl}/control`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                direction: direction,
-                timestamp: new Date().toISOString()
-            }),
-        })
-        .then(response => response.json())
-        .then(data => console.log('Success:', data))
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    }
-</script>
+        joystick.on('move', (evt, data) => {
+            let direction = 'brake';
+            if (data.direction) {
+                if (data.direction.angle === 'up') {
+                    direction = 'up';
+                } else if (data.direction.angle === 'down') {
+                    direction = 'down';
+                } else if (data.direction.angle === 'left') {
+                    direction = 'left';
+                } else if (data.direction.angle === 'right') {
+                    direction = 'right';
+                }
+            }
 
+            sendControlCommand(direction);
+        });
+
+        joystick.on('end', () => {
+            // Send brake command when joystick is released
+            sendControlCommand('brake');
+        });
+    </script>
 </body>
 </html>
