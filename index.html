@@ -23,15 +23,12 @@
         }
         .joystick-container {
             display: flex;
-            justify-content: space-around;
-            width: 100%;
+            justify-content: space-between;
+            width: 80%;
         }
         #joystick1, #joystick2 {
-            width: 150px;
-            height: 150px;
-            background-color: lightgray;
-            border-radius: 50%;
-            position: relative;
+            width: 300px;
+            height: 300px;
         }
     </style>
     <!-- Include nipplejs library -->
@@ -56,18 +53,18 @@
         const joystick1 = nipplejs.create({
             zone: document.getElementById('joystick1'),
             mode: 'static',
-            position: { left: '50%', top: '50%' },
+            position: { left: '20%', top: '50%' },  // Adjusted to prevent overlap
             color: 'blue',
-            size: 150
+            size: 200
         });
 
         // Create the second joystick instance (for camera control)
         const joystick2 = nipplejs.create({
             zone: document.getElementById('joystick2'),
             mode: 'static',
-            position: { left: '50%', top: '50%' },
+            position: { left: '80%', top: '50%' },  // Adjusted to prevent overlap
             color: 'red',
-            size: 150
+            size: 200
         });
 
         // Function to send control command to Flask server
@@ -101,11 +98,11 @@
                 }
             }
 
-            sendControlCommand(direction, 'robot');
+            sendControlCommand(direction, 'drive');  // 'drive' instead of 'robot'
         });
 
         joystick1.on('end', () => {
-            sendControlCommand('brake', 'robot');
+            sendControlCommand('brake', 'drive');
         });
 
         // Handle movement with joystick2 (camera control)
