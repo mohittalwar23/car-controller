@@ -98,11 +98,11 @@
                 }
             }
 
-            sendControlCommand(direction, 'robot');
+            sendControlCommand(direction, 'drive');  // 'drive' instead of 'robot'
         });
 
         joystick1.on('end', () => {
-            sendControlCommand('brake', 'robot');
+            sendControlCommand('brake', 'drive');
         });
 
         // Handle movement with joystick2 (camera control)
