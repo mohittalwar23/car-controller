@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Control with Dual Joysticks</title>
+    <title>Robot & Camera Control with Dual Joysticks</title>
     <style>
         body {
             display: flex;
@@ -15,26 +15,34 @@
             background-color: #f0f0f0;
             margin: 0;
         }
-        #joystick1, #joystick2 {
-            width: 300px;
-            height: 300px;
-            margin: 20px;
-        }
         #urlInput {
             margin-bottom: 20px;
+            width: 60%;
+            padding: 10px;
+            font-size: 16px;
         }
         .joystick-container {
             display: flex;
             justify-content: space-around;
             width: 100%;
         }
+        #joystick1, #joystick2 {
+            width: 150px;
+            height: 150px;
+            background-color: lightgray;
+            border-radius: 50%;
+            position: relative;
+        }
     </style>
     <!-- Include nipplejs library -->
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.8.6/dist/nipplejs.min.js"></script>
 </head>
 <body>
+
+    <!-- Input field for ngrok URL at the top center -->
     <input type="text" id="urlInput" placeholder="Enter ngrok URL" value="https://1234abcd.ngrok.io">
 
+    <!-- Two joysticks for control -->
     <div class="joystick-container">
         <div id="joystick1"></div>
         <div id="joystick2"></div>
@@ -44,13 +52,13 @@
         // Get the URL input element
         const urlInput = document.getElementById('urlInput');
 
-        // Create the first joystick instance (for driving)
+        // Create the first joystick instance (for robot control)
         const joystick1 = nipplejs.create({
             zone: document.getElementById('joystick1'),
             mode: 'static',
             position: { left: '50%', top: '50%' },
             color: 'blue',
-            size: 200
+            size: 150
         });
 
         // Create the second joystick instance (for camera control)
@@ -59,7 +67,7 @@
             mode: 'static',
             position: { left: '50%', top: '50%' },
             color: 'red',
-            size: 200
+            size: 150
         });
 
         // Function to send control command to Flask server
@@ -78,7 +86,7 @@
             .catch((error) => console.error('Error:', error));
         }
 
-        // Handle movement with joystick1 (driving)
+        // Handle movement with joystick1 (robot control)
         joystick1.on('move', (evt, data) => {
             let direction = 'brake';
             if (data.direction) {
@@ -93,11 +101,11 @@
                 }
             }
 
-            sendControlCommand(direction, 'drive');
+            sendControlCommand(direction, 'robot');
         });
 
         joystick1.on('end', () => {
-            sendControlCommand('brake', 'drive');
+            sendControlCommand('brake', 'robot');
         });
 
         // Handle movement with joystick2 (camera control)
@@ -122,5 +130,6 @@
             sendControlCommand('brake', 'camera');
         });
     </script>
+
 </body>
 </html>
